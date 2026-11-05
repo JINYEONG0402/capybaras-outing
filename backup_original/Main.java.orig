@@ -1,0 +1,583 @@
+package io.jbnu.test;
+
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+
+public class Main extends ApplicationAdapter {
+    private static final float VIEW_WIDTH = 800;
+    private static final float VIEW_HEIGHT = 600;
+    private static final int ROUND_COUNT = 3;
+    private static final float WORLD_WIDTH = 2600;
+    private static final float MOVE_SPEED = 260;
+    private static final float JUMP_SPEED = 650;
+    private static final float GRAVITY = 1700;
+
+    private SpriteBatch batch;
+    private Texture playerTexture, tangerineTexture, flagTexture, whiteTexture, pauseTexture;
+    private BitmapFont font;
+    private OrthographicCamera camera, hudCamera;
+    private FitViewport viewport;
+    private final Rectangle player = new Rectangle(80, 60, 32, 44);
+    private final Rectangle flag = new Rectangle();
+    private final Array<Rectangle> blocks = new Array<>();
+    private final Array<MovingPlatform> movingPlatforms = new Array<>();
+    private final Array<Trap> traps = new Array<>();
+    private final Rectangle switchPad = new Rectangle();
+    private final Rectangle door = new Rectangle();
+    private Rectangle carriedPlatform;
+    private float velocityX, velocityY;
+    private float worldWidth = WORLD_WIDTH;
+    private boolean grounded, gameOver, paused, switchOn;
+    private int stage;
+    private final Array<Rectangle> tangerines = new Array<>();
+    private int collectedTangerines, stageTangerineCount;
+    private boolean tangerinesInitialized;
+    private static final float INTRO_SECONDS = 2f;
+    private static final float CLEAR_SECONDS = 3f;
+    private static final float CLEAR_CAMERA_RISE = 360f;
+    private final GlyphLayout textLayout = new GlyphLayout();
+    private boolean stageIntro, stageClearing;
+    private float transitionTime, clearCameraStartY;
+
+    // 위치와 동작 정보를 묶는 작은 자료형입니다.
+    private static class MovingPlatform {
+        final Rectangle bounds;
+        final float min, max, speed;
+        final boolean vertical;
+        float direction = 1;
+
+        MovingPlatform(float x, float y, float width, float min, float max,
+                       float speed, boolean vertical) {
+            bounds = new Rectangle(x, y, width, 20);
+            this.min = min;
+            this.max = max;
+            this.speed = speed;
+            this.vertical = vertical;
+        }
+    }
+
+    private static class Trap {
+        final Rectangle bounds;
+        final float period, activeTime;
+        float timer;
+
+        Trap(float x, float y, float width, float period, float activeTime, float phase) {
+            bounds = new Rectangle(x, y, width, 24);
+            this.period = period;
+            this.activeTime = activeTime;
+            timer = phase;
+        }
+
+        boolean active() {
+            return timer < activeTime;
+        }
+    }
+
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+        playerTexture = new Texture(Gdx.files.internal("capybara.png"));
+        tangerineTexture = createTangerineTexture();
+        flagTexture = new Texture(Gdx.files.internal("flag.png"));
+        pauseTexture = new Texture(Gdx.files.internal("pause.png"));
+        pauseTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        Pixmap pixel = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixel.setColor(Color.WHITE);
+        pixel.fill();
+        whiteTexture = new Texture(pixel);
+        pixel.dispose();
+        font = new BitmapFont();
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, VIEW_WIDTH, VIEW_HEIGHT);
+        hudCamera = new OrthographicCamera();
+        hudCamera.setToOrtho(false, VIEW_WIDTH, VIEW_HEIGHT);
+        viewport = new FitViewport(VIEW_WIDTH, VIEW_HEIGHT, camera);
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+        loadStage(0);
+    }
+
+    private void loadStage(int nextStage) {
+        loadStage(nextStage, true);
+    }
+
+    private void loadStage(int nextStage, boolean showIntro) {
+        // 같은 레벨에서 리스폰하면 수집 개수와 남은 귤을 유지합니다.
+        boolean resetTangerines = !tangerinesInitialized || nextStage != stage || gameOver;
+        stageIntro = showIntro;
+        stageClearing = false;
+        transitionTime = 0;
+        stage = nextStage;
+        blocks.clear();
+        movingPlatforms.clear();
+        traps.clear();
+        switchOn = false;
+        paused = false;
+        gameOver = false;
+        carriedPlatform = null;
+        if (stage == 0) {
+            worldWidth = WORLD_WIDTH;
+            blocks.add(new Rectangle(0, 0, 620, 60));
+            blocks.add(new Rectangle(880, 0, 420, 60));
+            blocks.add(new Rectangle(1440, 0, 1160, 60));
+            blocks.add(new Rectangle(300, 60, 80, 64));
+            blocks.add(new Rectangle(960, 60, 96, 80));
+            blocks.add(new Rectangle(1650, 60, 120, 70));
+            blocks.add(new Rectangle(1790, 60, 120, 140));
+            blocks.add(new Rectangle(1930, 60, 120, 210));
+            blocks.add(new Rectangle(2100, 270, 110, 24));
+            blocks.add(new Rectangle(2280, 320, 210, 24));
+            addPlatform(580, 85, 140, 580, 800, 85, false);
+            switchPad.set(0, 0, 0, 0);
+            door.set(0, 0, 0, 0);
+            switchOn = true;
+            flag.set(2420, 344, 20, 100);
+        } else if (stage == 1) {
+            worldWidth = 2200;
+            blocks.add(new Rectangle(0, 0, 2200, 60));
+            blocks.add(new Rectangle(700, 236, 220, 24));
+            // 지면보다 94 높게 배치하여 옆에서 점프로 올라갈 수 있습니다.
+            blocks.add(new Rectangle(1200, 130, 350, 24));
+            blocks.add(new Rectangle(1750, 60, 120, 70));
+            blocks.add(new Rectangle(1890, 130, 220, 24));
+            addPlatform(540, 60, 120, 60, 236, 65, true);
+            traps.add(new Trap(1280, 60, 70, 4f, 1.6f, 1.6f));
+            traps.add(new Trap(1440, 60, 60, 4f, 1.6f, 2.6f));
+            switchPad.set(780, 260, 50, 12);
+            door.set(1080, 60, 28, 430);
+            flag.set(2020, 154, 20, 100);
+        } else {
+            worldWidth = 2800;
+            blocks.add(new Rectangle(0, 0, 560, 60));
+            blocks.add(new Rectangle(900, 0, 700, 60));
+            blocks.add(new Rectangle(1940, 0, 860, 60));
+            blocks.add(new Rectangle(980, 60, 140, 70));
+            blocks.add(new Rectangle(2280, 60, 120, 70));
+            blocks.add(new Rectangle(2430, 130, 120, 24));
+            blocks.add(new Rectangle(2600, 200, 180, 24));
+            addPlatform(520, 100, 150, 520, 800, 100, false);
+            addPlatform(1540, 100, 150, 1540, 1840, 90, false);
+            traps.add(new Trap(1170, 60, 70, 3.2f, 1.4f, 1.4f));
+            traps.add(new Trap(1320, 60, 70, 4f, 1.8f, 2.4f));
+            traps.add(new Trap(2110, 60, 80, 3.6f, 1.5f, 1.5f));
+            switchPad.set(1020, 130, 50, 12);
+            door.set(1450, 60, 28, 430);
+            flag.set(2690, 224, 20, 100);
+        }
+        if (stage != 0) blocks.add(door);
+        if (resetTangerines) {
+            placeTangerines();
+            tangerinesInitialized = true;
+        }
+        player.setPosition(80, 60);
+        velocityX = 0;
+        velocityY = 0;
+        grounded = true;
+        updateCamera();
+    }
+
+    private void addPlatform(float x, float y, float width, float min, float max,
+                             float speed, boolean vertical) {
+        MovingPlatform platform = new MovingPlatform(x, y, width, min, max, speed, vertical);
+        movingPlatforms.add(platform);
+        blocks.add(platform.bounds);
+    }
+
+    @Override
+    public void render() {
+        update(Math.max(0f, Gdx.graphics.getDeltaTime()));
+        ScreenUtils.clear(0.88f, 0.94f, 0.98f, 1);
+        viewport.apply();
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        batch.setColor(Color.WHITE);
+        for (Rectangle block : blocks) {
+            if (block != door) drawGrassGround(block);
+        }
+        for (MovingPlatform platform : movingPlatforms) {
+            drawGrassGround(platform.bounds);
+            font.setColor(Color.WHITE);
+            font.draw(batch, platform.vertical ? "UP / DOWN" : "<  FERRY  >",
+                platform.bounds.x + 12, platform.bounds.y + 16);
+        }
+        for (Trap trap : traps) {
+            boolean active = trap.active();
+            drawBox(trap.bounds, active ? 0.95f : 0.25f, active ? 0.2f : 0.65f, 0.25f, 1);
+            font.setColor(Color.BLACK);
+            if (stage != 0) {
+                font.draw(batch, active ? "ON" : "SAFE", trap.bounds.x, trap.bounds.y + 42);
+            }
+            float remaining = active ? (trap.activeTime - trap.timer) / trap.activeTime
+                : (trap.period - trap.timer) / (trap.period - trap.activeTime);
+            batch.setColor(Color.WHITE);
+            batch.draw(whiteTexture, trap.bounds.x, trap.bounds.y + 27,
+                trap.bounds.width * remaining, 4);
+        }
+        if (stage != 0) {
+            drawBox(switchPad, switchOn ? 0.2f : 1f, switchOn ? 0.8f : 0.65f, 0.15f, 1);
+            font.setColor(Color.BLACK);
+            font.draw(batch, switchOn ? "OPEN" : "STEP ON", switchPad.x - 5, switchPad.y + 32);
+            if (!switchOn) {
+                drawBox(door, 0.55f, 0.25f, 0.8f, 1);
+                font.setColor(Color.WHITE);
+                font.draw(batch, "LOCK", door.x - 5, door.y + door.height + 22);
+            }
+        }
+        batch.setColor(Color.WHITE);
+        for (Rectangle fruit : tangerines) {
+            batch.draw(tangerineTexture, fruit.x, fruit.y, fruit.width, fruit.height);
+        }
+        batch.draw(flagTexture, flag.x, flag.y, flag.width, flag.height);
+        batch.draw(playerTexture, player.x, player.y, player.width, player.height);
+        batch.end();
+        batch.setProjectionMatrix(hudCamera.combined);
+        batch.begin();
+        batch.setColor(Color.WHITE);
+        if (!stageIntro && !stageClearing && !gameOver) {
+            font.setColor(Color.BLACK);
+            font.getData().setScale(1.5f);
+            font.draw(batch, "round " + (stage + 1), 20, VIEW_HEIGHT - 20);
+            font.draw(batch, "Tangerines: " + collectedTangerines + " / " + stageTangerineCount,
+                180, VIEW_HEIGHT - 20);
+            font.getData().setScale(1);
+            if (player.overlaps(flag) && tangerines.size > 0) {
+                font.draw(batch, "Collect all tangerines! Remaining: " + tangerines.size,
+                    20, VIEW_HEIGHT - 52);
+            }
+        }
+        if (stageIntro && !paused) {
+            drawCenteredText("round " + (stage + 1), 300, 5f, Color.BLACK);
+        } else if ((stageClearing || gameOver) && !paused) {
+            drawCenteredText("clear", 300, 5f, Color.BLACK);
+            if (gameOver) {
+                drawCenteredText("Press ENTER to play again.", 230, 1.3f, Color.BLACK);
+            }
+        }
+        if (paused && !gameOver) {
+            // 원본 비율을 유지하며 화면 중앙의 600 x 400 영역에 맞춥니다.
+            float scale = Math.min(600f / pauseTexture.getWidth(),
+                400f / pauseTexture.getHeight());
+            float width = pauseTexture.getWidth() * scale;
+            float height = pauseTexture.getHeight() * scale;
+            batch.setColor(Color.WHITE);
+            batch.draw(pauseTexture, (VIEW_WIDTH - width) / 2f, (VIEW_HEIGHT - height) / 2f,
+                width, height);
+        }
+        batch.end();
+    }
+
+    // 별도 이미지 파일 없이 둥근 귤과 잎을 생성합니다.
+    private Texture createTangerineTexture() {
+        Pixmap fruit = new Pixmap(32, 32, Pixmap.Format.RGBA8888);
+        fruit.setColor(0, 0, 0, 0);
+        fruit.fill();
+        fruit.setColor(0.65f, 0.25f, 0.03f, 1);
+        fruit.fillCircle(16, 18, 13);
+        fruit.setColor(1f, 0.52f, 0.05f, 1);
+        fruit.fillCircle(16, 17, 11);
+        fruit.setColor(1f, 0.73f, 0.23f, 1);
+        fruit.fillCircle(12, 13, 4);
+        fruit.setColor(0.35f, 0.21f, 0.08f, 1);
+        fruit.fillRectangle(15, 3, 3, 6);
+        fruit.setColor(0.24f, 0.59f, 0.13f, 1);
+        fruit.fillTriangle(17, 6, 23, 1, 27, 5);
+        Texture texture = new Texture(fruit);
+        fruit.dispose();
+        return texture;
+    }
+
+    // 고정 발판 위에 놓고, 함정이나 스위치와 겹치는 위치는 제외합니다.
+    private void placeTangerines() {
+        tangerines.clear();
+        collectedTangerines = 0;
+        for (int blockIndex = 0; blockIndex < blocks.size; blockIndex++) {
+            Rectangle block = blocks.get(blockIndex);
+            if (block == door) continue;
+            boolean moving = false;
+            for (MovingPlatform platform : movingPlatforms) {
+                if (platform.bounds == block) moving = true;
+            }
+            if (moving) continue;
+            for (float x = block.x + 28; x + 24 <= block.x + block.width - 12; x += 120) {
+                Rectangle fruit = new Rectangle(x, block.y + block.height, 24, 24);
+                // 귤보다 큰 캐릭터의 통행 공간까지 확보합니다.
+                Rectangle standingSpace = new Rectangle(
+                    fruit.x + fruit.width / 2f - player.width / 2f - 4,
+                    fruit.y, player.width + 8, player.height + 4);
+                boolean obstructed = standingSpace.overlaps(flag);
+                for (int otherIndex = 0; otherIndex < blocks.size; otherIndex++) {
+                    Rectangle other = blocks.get(otherIndex);
+                    if (other == block) continue;
+                    if (standingSpace.overlaps(other)) obstructed = true;
+                    // 발판 아래에 가려진 하단 경로에는 귤을 배치하지 않습니다.
+                    boolean overhead = other.y >= fruit.y
+                        && standingSpace.x < other.x + other.width
+                        && standingSpace.x + standingSpace.width > other.x;
+                    if (overhead) obstructed = true;
+                }
+                for (Trap trap : traps) {
+                    if (standingSpace.overlaps(trap.bounds)) obstructed = true;
+                }
+                if (stage != 0 && fruit.overlaps(switchPad)) obstructed = true;
+                if (!obstructed) tangerines.add(fruit);
+            }
+        }
+        stageTangerineCount = tangerines.size;
+    }
+
+    // 지면, 공중 발판 모두 같은 잔디와 흙으로 표시합니다.
+    private void drawGrassGround(Rectangle ground) {
+        drawBox(ground, 0.48f, 0.29f, 0.15f, 1);
+        batch.setColor(0.60f, 0.39f, 0.21f, 1);
+        for (float y = ground.y + 5; y + 3 < ground.y + ground.height - 12; y += 20) {
+            for (float x = ground.x + 6; x + 5 <= ground.x + ground.width; x += 19) {
+                batch.draw(whiteTexture, x, y, 5, 3);
+            }
+        }
+        float top = ground.y + ground.height;
+        batch.setColor(0.20f, 0.46f, 0.14f, 1);
+        batch.draw(whiteTexture, ground.x, top - 12, ground.width, 12);
+        batch.setColor(0.38f, 0.72f, 0.20f, 1);
+        batch.draw(whiteTexture, ground.x, top - 6, ground.width, 6);
+        for (float x = ground.x + 2; x + 3 <= ground.x + ground.width; x += 9) {
+            batch.setColor(0.58f, 0.83f, 0.28f, 1);
+            batch.draw(whiteTexture, x, top - 4, 3, 4);
+        }
+        batch.setColor(Color.WHITE);
+    }
+
+    private void drawCenteredText(String text, float centerY, float scale, Color color) {
+        font.getData().setScale(scale);
+        font.setColor(color);
+        textLayout.setText(font, text);
+        font.draw(batch, textLayout, (VIEW_WIDTH - textLayout.width) / 2f,
+            centerY + textLayout.height / 2f);
+        font.getData().setScale(1);
+    }
+
+    private void beginStageClear() {
+        stageClearing = true;
+        transitionTime = 0;
+        velocityX = 0;
+        velocityY = 0;
+        updateCamera();
+        clearCameraStartY = camera.position.y;
+    }
+
+    private void drawBox(Rectangle box, float r, float g, float b, float a) {
+        batch.setColor(r, g, b, a);
+        batch.draw(whiteTexture, box.x, box.y, box.width, box.height);
+        batch.setColor(Color.WHITE);
+    }
+
+    private void update(float dt) {
+        // Enter는 현재 레벨을 처음부터 다시 시작합니다.
+        // 모든 레벨을 클리어한 뒤에는 레벨 1부터 시작합니다.
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            loadStage(gameOver ? 0 : stage, false);
+            return;
+        }
+        if (gameOver) return;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)
+            || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            paused = !paused;
+            return; // 재개 프레임의 시간도 버려 누적 이동을 막습니다.
+        }
+        if (paused || dt <= 0) return;
+        if (stageIntro) {
+            transitionTime += dt;
+            if (transitionTime >= INTRO_SECONDS) {
+                stageIntro = false;
+                transitionTime = 0;
+            }
+            return;
+        }
+        if (stageClearing) {
+            transitionTime += dt;
+            float progress = MathUtils.clamp(transitionTime / CLEAR_SECONDS, 0, 1);
+            float eased = progress * progress * (3 - 2 * progress);
+            camera.position.y = clearCameraStartY + CLEAR_CAMERA_RISE * eased;
+            camera.update();
+            if (progress >= 1) {
+                if (stage + 1 < ROUND_COUNT) loadStage(stage + 1);
+                else {
+                    stageClearing = false;
+                    gameOver = true;
+                }
+            }
+            return;
+        }
+        // 연출은 실제 경과 시간, 물리는 기존처럼 제한된 시간 간격을 사용합니다.
+        dt = Math.min(dt, 1f / 30f);
+        velocityX = 0;
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) velocityX -= MOVE_SPEED;
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) velocityX += MOVE_SPEED;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && grounded) {
+            velocityY = JUMP_SPEED;
+            grounded = false;
+        }
+        // 작은 물리 스텝으로 얇은 발판과 함정의 관통을 방지합니다.
+        int steps = Math.max(1, (int) Math.ceil(dt / (1f / 120f)));
+        float step = dt / steps;
+        for (int i = 0; i < steps; i++) {
+            if (!updatePlatforms(step)) return;
+            for (Trap trap : traps) trap.timer = (trap.timer + step) % trap.period;
+            velocityY = Math.max(velocityY - GRAVITY * step, -900);
+            moveX(step);
+            moveY(step);
+            if (player.y < -100) {
+                loadStage(stage, false);
+                return;
+            }
+            for (Trap trap : traps) {
+                if (trap.active() && player.overlaps(trap.bounds)) {
+                    loadStage(stage, false);
+                    return;
+                }
+            }
+            if (stage != 0 && !switchOn && grounded && player.overlaps(switchPad)) {
+                switchOn = true;
+                blocks.removeValue(door, true);
+            }
+            for (int fruitIndex = tangerines.size - 1; fruitIndex >= 0; fruitIndex--) {
+                if (player.overlaps(tangerines.get(fruitIndex))) {
+                    tangerines.removeIndex(fruitIndex);
+                    collectedTangerines++;
+                }
+            }
+            if (tangerines.size == 0 && player.overlaps(flag)) {
+                beginStageClear();
+                return;
+            }
+        }
+        updateCamera();
+    }
+
+    private boolean updatePlatforms(float dt) {
+        for (MovingPlatform platform : movingPlatforms) {
+            Rectangle box = platform.bounds;
+            boolean riding = grounded && Math.abs(player.y - (box.y + box.height)) < 0.5f
+                && player.x + player.width > box.x && player.x < box.x + box.width;
+            float oldX = box.x;
+            float oldY = box.y;
+            float position = (platform.vertical ? box.y : box.x)
+                + platform.direction * platform.speed * dt;
+            if (position >= platform.max) {
+                position = platform.max;
+                platform.direction = -1;
+            } else if (position <= platform.min) {
+                position = platform.min;
+                platform.direction = 1;
+            }
+            if (platform.vertical) box.y = position;
+            else box.x = position;
+            if (riding) {
+                float savedX = velocityX;
+                float savedY = velocityY;
+                carriedPlatform = box;
+                velocityX = (box.x - oldX) / dt;
+                velocityY = (box.y - oldY) / dt;
+                moveX(dt);
+                moveY(dt);
+                carriedPlatform = null;
+                velocityX = savedX;
+                velocityY = savedY;
+                grounded = true;
+                // 실수 오차 때문에 탑승자를 끼임으로 오인하지 않도록 맞춥니다.
+                if (Math.abs(player.y - (box.y + box.height)) < 0.5f) {
+                    player.y = box.y + box.height;
+                }
+                if (player.overlaps(box)) {
+                    loadStage(stage, false); // 천장 등에 끼었을 때도 정상 복귀시킵니다.
+                    return false;
+                }
+            } else if (player.overlaps(box)) {
+                // 발판이 옆이나 아래에서 접근하면 진행 방향으로 밀어냅니다.
+                if (platform.vertical) {
+                    if (box.y > oldY) {
+                        player.y = box.y + box.height;
+                        velocityY = Math.max(velocityY, 0);
+                        grounded = velocityY == 0;
+                    } else {
+                        player.y = box.y - player.height;
+                        velocityY = Math.min(velocityY, 0);
+                    }
+                } else player.x = box.x > oldX ? box.x + box.width : box.x - player.width;
+                for (Rectangle block : blocks) {
+                    if (block != box && player.overlaps(block)) {
+                        loadStage(stage, false);
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private void moveX(float dt) {
+        player.x += velocityX * dt;
+        for (Rectangle block : blocks) {
+            if (block == carriedPlatform || !player.overlaps(block)) continue;
+            if (velocityX > 0) player.x = block.x - player.width;
+            else if (velocityX < 0) player.x = block.x + block.width;
+        }
+        player.x = MathUtils.clamp(player.x, 0, worldWidth - player.width);
+    }
+
+    private void moveY(float dt) {
+        float dy = velocityY * dt;
+        player.y += dy;
+        grounded = false;
+        for (Rectangle block : blocks) {
+            if (block == carriedPlatform || !player.overlaps(block)) continue;
+            if (dy < 0) {
+                player.y = block.y + block.height;
+                velocityY = 0;
+                grounded = true;
+            } else if (dy > 0) {
+                player.y = block.y - player.height;
+                velocityY = 0;
+            }
+        }
+    }
+
+    private void updateCamera() {
+        camera.position.set(MathUtils.clamp(player.x + player.width / 2,
+                VIEW_WIDTH / 2, worldWidth - VIEW_WIDTH / 2),
+            VIEW_HEIGHT / 2, 0);
+        camera.update();
+    }
+
+    @Override
+    public void pause() {
+        if (!gameOver) paused = true;
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height, false);
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        playerTexture.dispose();
+        tangerineTexture.dispose();
+        flagTexture.dispose();
+        pauseTexture.dispose();
+        whiteTexture.dispose();
+        font.dispose();
+    }
+}

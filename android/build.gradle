@@ -1,0 +1,60 @@
+apply plugin: 'com.android.application'
+
+android {
+  namespace 'io.jbnu.test.android'
+  compileSdk 35
+
+  defaultConfig {
+    applicationId 'io.jbnu.capybarasouting'
+    minSdk 21
+    targetSdk 35
+    versionCode 1
+    versionName '1.0'
+  }
+  sourceSets {
+    main {
+      assets.srcDirs = ['../assets']
+      jniLibs.srcDirs = ['libs']
+    }
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+  packaging {
+    resources.excludes += ['META-INF/robovm/**']
+  }
+}
+
+configurations { natives }
+
+dependencies {
+  implementation project(':core')
+  implementation "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+  natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
+  natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
+  natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
+  natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
+}
+
+// libGDX 네이티브 라이브러리를 기기 종류별 폴더로 풀어 놓습니다.
+tasks.register('copyAndroidNatives') {
+  doFirst {
+    configurations.natives.copy().files.each { jar ->
+      def abi = null
+      ['armeabi-v7a', 'arm64-v8a', 'x86_64', 'x86'].each { name ->
+        if (abi == null && jar.name.endsWith("natives-${name}.jar")) abi = name
+      }
+      if (abi != null) {
+        def target = file("libs/$abi")
+        target.mkdirs()
+        copy {
+          from zipTree(jar)
+          into target
+          include '*.so'
+        }
+      }
+    }
+  }
+}
+tasks.named('preBuild') { dependsOn 'copyAndroidNatives' }

@@ -1,0 +1,25 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+// Gradle 기본 테스트 프로세스는 프로젝트 경로에 한글이 있으면 테스트 클래스를 찾지 못합니다.
+// 게임 실행과 같은 방식(JavaExec)으로 JUnit을 직접 실행해 어떤 경로에서도 동작하게 합니다.
+tasks.register('runTests', JavaExec) {
+  dependsOn testClasses
+  mainClass = 'org.junit.runner.JUnitCore'
+  classpath = sourceSets.test.runtimeClasspath
+  workingDir = projectDir
+  args 'io.jbnu.test.world.GameWorldTest', 'io.jbnu.test.world.LevelPlaythroughTest'
+}
+test {
+  enabled = false
+  dependsOn 'runTests'
+}
+
+dependencies {
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  testImplementation "junit:junit:4.13.2"
+
+  if(enableGraalNative == 'true') {
+    implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
+  }
+}
