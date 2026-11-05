@@ -119,7 +119,10 @@ public final class TitleScreen extends ScreenAdapter {
         startButton.draw(assets, mouse, BUTTON_MAIN);
         howToButton.draw(assets, mouse, BUTTON_SUB);
         if (game.bestScore() > 0) {
-            assets.textCenter("BEST  " + game.bestScore() + "  (rank " + game.bestRank() + ")", cx, 40, 1.3f, Color.WHITE);
+            assets.textCenter("BEST  " + game.bestScore() + "  (rank " + game.bestRank() + ")", cx, 56, 1.2f, Color.WHITE);
+        }
+        if (game.homeTip != null) {
+            assets.textCenter(game.homeTip, Tuning.VIEW_W / 2, 26, 1.15f, Color.WHITE);
         }
     }
 
@@ -133,7 +136,7 @@ public final class TitleScreen extends ScreenAdapter {
         String[] controls = game.touchUi ? new String[]{
             "Left / right buttons : Move",
             "Up button : Jump (hold = higher)",
-            "ZEN button : ZEN mode (when the gauge is full)",
+            "Shield button : ZEN mode (when the gauge is full)",
             "Hold the phone sideways"
         } : new String[]{
             "Arrows / A D : Move",

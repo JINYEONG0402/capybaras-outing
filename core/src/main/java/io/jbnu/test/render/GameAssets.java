@@ -18,6 +18,7 @@ public final class GameAssets {
     public final BitmapFont font = new BitmapFont();
     public final Texture white, capybara, flag, pause, circle, arrow, tangerine, golden;
     public final Texture baby, heart, iris;
+    public final Texture iconShield;
     public final Texture iconGear, iconSoundOn, iconSoundOff, iconPause, iconPlay, iconHome;
     public final Texture[] boar, hedgehog, hawk, derpy;
 
@@ -36,6 +37,7 @@ public final class GameAssets {
         baby = own(smoothTexture("baby.png", 256, 256));
         heart = own(soft(fromPixmap(UiIcons.heart())));
         iris = own(soft(fromPixmap(UiIcons.irisHole())));
+        iconShield = own(soft(fromPixmap(UiIcons.shield())));
         iconGear = own(soft(fromPixmap(UiIcons.gear())));
         iconSoundOn = own(soft(fromPixmap(UiIcons.soundOn())));
         iconSoundOff = own(soft(fromPixmap(UiIcons.soundOff())));

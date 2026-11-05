@@ -63,6 +63,10 @@ public final class Hud {
         assets.rect(x, y, w * ratio, h, 0.45f * flash, 0.9f * flash, 0.65f * flash, 1);
         String label = active ? "ZEN!" : full ? "ZEN READY!" : "ZEN";
         assets.text(label, x + 6, y + 13, 0.85f, WHITE, Align.left);
+        if (active || full) assets.batch.setColor(GOLD);
+        else assets.batch.setColor(1, 1, 1, 0.55f);
+        assets.batch.draw(assets.iconShield, x + w + 6, y - 3, 22, 22);
+        assets.batch.setColor(Color.WHITE);
 
         // 친구 수는 아이콘으로 표시합니다.
         assets.batch.setColor(Color.WHITE);

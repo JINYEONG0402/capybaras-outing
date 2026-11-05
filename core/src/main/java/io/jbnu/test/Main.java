@@ -22,6 +22,8 @@ public class Main extends Game {
 
     /** 휴대폰처럼 키보드가 없는 기기에서 화면 버튼을 보여 줄지 정합니다. */
     public final boolean touchUi;
+    /** 홈 화면 아래에 보여 줄 안내 문구입니다. 없으면 null입니다. */
+    public final String homeTip;
     public GameAssets assets;
     public AudioManager audio;
     private Preferences save;
@@ -32,7 +34,12 @@ public class Main extends Game {
     }
 
     public Main(boolean touchUi) {
+        this(touchUi, null);
+    }
+
+    public Main(boolean touchUi, String homeTip) {
         this.touchUi = touchUi;
+        this.homeTip = homeTip;
     }
 
     @Override

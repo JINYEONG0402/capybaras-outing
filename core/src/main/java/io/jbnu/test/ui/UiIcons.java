@@ -23,6 +23,27 @@ public final class UiIcons {
         p.setColor(0, 0, 0, 0);
     }
 
+    /** Zen 모드를 나타내는 방패입니다. 무적이 되는 기능을 모양으로 알려 줍니다. */
+    public static Pixmap shield() {
+        Pixmap p = canvas();
+        shieldShape(p, 0);
+        beginErase(p);
+        shieldShape(p, 6);
+        p.setBlending(Pixmap.Blending.SourceOver);
+        p.setColor(1, 1, 1, 1);
+        shieldShape(p, 11);
+        return p;
+    }
+
+    /** inset만큼 안쪽으로 줄인 방패 모양을 현재 색으로 채웁니다. */
+    private static void shieldShape(Pixmap p, int inset) {
+        int left = 8 + inset, right = 56 - inset, top = 6 + inset;
+        int shoulder = 34;
+        int tip = 62 - inset * 3 / 2;
+        p.fillRectangle(left, top, right - left + 1, shoulder - top);
+        p.fillTriangle(left, shoulder, right, shoulder, 32, tip);
+    }
+
     public static Pixmap heart() {
         Pixmap p = canvas();
         p.fillCircle(20, 22, 15);
