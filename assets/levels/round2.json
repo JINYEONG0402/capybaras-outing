@@ -37,11 +37,5 @@
   "door": [1450, 60, 430],
   "flag": [2720, 224],
   "child": [2672, 224],
-  "golden": [520, 340],
-  "signs": [
-    { "x": 200, "y": 300, "text": "Stomp a boar: it becomes your friend\nand blocks one hit for you" },
-    { "x": 330, "y": 420, "text": "Cracked planks fall when you stand on them" },
-    { "x": 1660, "y": 300, "text": "ZEN full? Use it: world slows, you can't be hurt" },
-    { "x": 2000, "y": 190, "text": "Hedgehogs are spiky: never stomp them. Jump over!" }
-  ]
+  "golden": [520, 340]
 }
