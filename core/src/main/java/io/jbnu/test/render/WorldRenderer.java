@@ -370,9 +370,10 @@ public final class WorldRenderer {
         }
 
         if (world.zenActive()) {
-            float pulse = 72 + 10 * MathUtils.sin(time * 6);
-            batch.setColor(1, 0.9f, 0.4f, 0.32f);
-            batch.draw(assets.circle, b.x + Player.W / 2 - pulse / 2, b.y + Player.H / 2 - pulse / 2, pulse, pulse);
+            // Zen 중에는 카피바라를 감싸는 커다란 방패가 나타납니다.
+            float pulse = 92 + 8 * MathUtils.sin(time * 6);
+            batch.setColor(1, 0.88f, 0.35f, 0.5f);
+            batch.draw(assets.iconShield, b.x + Player.W / 2 - pulse / 2, b.y + Player.H / 2 - pulse / 2 + 6, pulse, pulse);
         }
         if (world.zenActive()) batch.setColor(1f, 0.95f, 0.65f, alpha);
         else batch.setColor(1, 1, 1, alpha);

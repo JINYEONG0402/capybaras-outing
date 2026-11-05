@@ -1,0 +1,19 @@
+// 게임보다 먼저 실행되는 휴대폰 지원 코드입니다.
+(function () {
+  function lockLandscape() {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("landscape").catch(function () {});
+    }
+  }
+
+  // 안드로이드처럼 전체화면을 지원하는 기기는 터치할 때 전체화면으로 바꿉니다. 아이폰은 지원하지 않습니다.
+  document.addEventListener("touchend", function () {
+    var page = document.documentElement;
+    var request = page.requestFullscreen || page.webkitRequestFullscreen;
+    if (!request || document.fullscreenElement || document.webkitFullscreenElement) return;
+    try {
+      var result = request.call(page);
+      if (result && result.then) result.then(lockLandscape, function () {});
+    } catch (e) { /* 브라우저가 거절하면 그대로 진행합니다. */ }
+  }, { passive: true });
+})();

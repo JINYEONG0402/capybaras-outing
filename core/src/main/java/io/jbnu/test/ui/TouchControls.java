@@ -49,8 +49,12 @@ public final class TouchControls {
         drawButton(assets, right, rightDown, 0);
         drawButton(assets, jump, jumpDown, 90);
         drawCircle(assets, zen, zenDown, zenReady ? 0.85f : 0.3f);
-        Color label = zenReady ? Color.WHITE : Color.LIGHT_GRAY;
-        assets.textCenter("ZEN", zen.x + zen.width / 2, zen.y + zen.height / 2 + 10, 1.25f, label);
+        // 게이지가 차면 방패가 금색으로 밝아집니다.
+        float size = zen.width * 0.56f;
+        if (zenReady) assets.batch.setColor(1f, 0.84f, 0.25f, 1);
+        else assets.batch.setColor(0.8f, 0.8f, 0.8f, 0.6f);
+        assets.batch.draw(assets.iconShield, zen.x + (zen.width - size) / 2, zen.y + (zen.height - size) / 2, size, size);
+        assets.batch.setColor(Color.WHITE);
     }
 
     private void drawButton(GameAssets assets, Rectangle r, boolean down, float rotation) {
