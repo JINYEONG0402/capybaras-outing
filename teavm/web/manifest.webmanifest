@@ -1,7 +1,7 @@
 {
-  "name": "Capybara's Outing",
+  "name": "Daddy Capybara's Journey to Find His Children",
   "short_name": "Capybara",
-  "description": "A dad capybara searches for his 3 kids.",
+  "description": "A dad capybara searches for his children.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

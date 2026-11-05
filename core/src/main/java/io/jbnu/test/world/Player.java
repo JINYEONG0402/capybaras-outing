@@ -15,14 +15,14 @@ public final class Player {
     public Rectangle ground;
     public float invuln, landSquash, walkTime;
 
-    private float coyote, jumpBuffer, knockTimer;
+    private float coyote, jumpBuffer;
     private boolean jumping;
 
     void place(float x, float y) {
         bounds.setPosition(x, y);
         vx = vy = 0;
         ground = null;
-        coyote = jumpBuffer = knockTimer = 0;
+        coyote = jumpBuffer = 0;
         jumping = false;
     }
 
@@ -33,7 +33,6 @@ public final class Player {
     void update(float dt, InputState in, Array<Rectangle> solids, float worldWidth, WorldListener events) {
         invuln = Math.max(0, invuln - dt);
         landSquash = Math.max(0, landSquash - dt * 5f);
-        knockTimer = Math.max(0, knockTimer - dt);
 
         move(dt, in);
         jump(dt, in, events);
@@ -57,7 +56,6 @@ public final class Player {
     }
 
     private void move(float dt, InputState in) {
-        if (knockTimer > 0) return; // 넉백 중에는 조작이 잠시 막힙니다.
         float wish = 0;
         if (in.left) wish -= Tuning.MOVE_SPEED;
         if (in.right) wish += Tuning.MOVE_SPEED;
@@ -70,7 +68,7 @@ public final class Player {
     private void jump(float dt, InputState in, WorldListener events) {
         // 코요테 타임과 입력 버퍼로 '눌렀는데 안 뛴' 느낌을 없앱니다.
         jumpBuffer = in.jumpPressed ? Tuning.JUMP_BUFFER : Math.max(0, jumpBuffer - dt);
-        if (jumpBuffer > 0 && coyote > 0 && knockTimer <= 0) {
+        if (jumpBuffer > 0 && coyote > 0) {
             vy = Tuning.JUMP_SPEED;
             jumpBuffer = 0;
             coyote = 0;
@@ -118,15 +116,5 @@ public final class Player {
         jumping = false;
         coyote = 0;
         ground = null;
-    }
-
-    void knockback(int direction) {
-        vx = direction * 260;
-        vy = 340;
-        ground = null;
-        coyote = 0;
-        jumping = false;
-        knockTimer = Tuning.KNOCKBACK_TIME;
-        invuln = Tuning.INVULN_TIME;
     }
 }

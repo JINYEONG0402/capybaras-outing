@@ -18,19 +18,17 @@ public final class Tuning {
 
     public static final float STOMP_BOUNCE = 470;
     public static final float STOMP_BOUNCE_HELD = 640;
-    public static final float KNOCKBACK_TIME = 0.22f;
     public static final float INVULN_TIME = 1.6f;
     public static final float DEATH_TIME = 0.8f;
-    public static final int MAX_FRIENDS = 3;
+    public static final int START_LIVES = 3;
 
     public static final float COMBO_WINDOW = 2.6f;
     public static final int COMBO_CAP = 9;
     public static final int POINTS_TANGERINE = 100;
     public static final int POINTS_STOMP = 300;
     public static final int POINTS_GOLDEN = 1000;
-    public static final int POINTS_FULL_STACK = 500;
     public static final int POINTS_CLEAR = 1000;
-    public static final int POINTS_FRIEND_BONUS = 200;
+    public static final int POINTS_LIFE_BONUS = 200;
 
     public static final float ZEN_DURATION = 4.5f;
     public static final float ZEN_WORLD_SCALE = 0.35f;

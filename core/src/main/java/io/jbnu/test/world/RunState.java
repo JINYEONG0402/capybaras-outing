@@ -2,7 +2,7 @@ package io.jbnu.test.world;
 
 /** 라운드를 넘어 유지되는 한 판의 기록입니다. */
 public final class RunState {
-    public int score, deaths, friends, goldens;
+    public int score, deaths, goldens;
     /** 지금까지 찾은 자식 수입니다. */
     public int children;
     public float time, zen;
@@ -16,7 +16,6 @@ public final class RunState {
     public void set(RunState o) {
         score = o.score;
         deaths = o.deaths;
-        friends = o.friends;
         goldens = o.goldens;
         children = o.children;
         time = o.time;

@@ -10,7 +10,7 @@ import io.jbnu.test.level.LevelDef;
  * 그래픽, 소리, 키보드에 의존하지 않으므로 창 없이도 실행하고 테스트할 수 있습니다.
  */
 public final class GameWorld {
-    public enum Phase { PLAYING, DYING, CLEARED }
+    public enum Phase { PLAYING, DYING, GAME_OVER, CLEARED }
 
     public final LevelDef def;
     public final RunState run;
@@ -31,6 +31,8 @@ public final class GameWorld {
     public Phase phase = Phase.PLAYING;
     public boolean switchOn, soaking;
     public int collected, required, combo;
+    /** 이번 레벨에 남은 목숨입니다. 멧돼지를 밟으면 늘어납니다. */
+    public int lives = Tuning.START_LIVES;
     public float comboTimer, zenTimer, doorAnim, roundTime, tideY, tideSpeed, deathTimer;
     public HotSpring lastSpring;
 
@@ -150,12 +152,19 @@ public final class GameWorld {
 
     /** 고정 시간 간격으로 호출되는 한 번의 시뮬레이션입니다. */
     public void step(float dt, InputState in) {
-        if (phase == Phase.CLEARED) return;
+        if (phase == Phase.CLEARED || phase == Phase.GAME_OVER) return;
         run.time += dt;
         roundTime += dt;
         if (phase == Phase.DYING) {
             deathTimer -= dt;
-            if (deathTimer <= 0) respawn();
+            if (deathTimer <= 0) {
+                if (lives > 0) {
+                    respawn();
+                } else {
+                    phase = Phase.GAME_OVER;
+                    events.onGameOver();
+                }
+            }
             return;
         }
         updateZen(dt, in);
@@ -318,7 +327,7 @@ public final class GameWorld {
         }
         for (Trap trap : traps) {
             if (trap.active() && p.overlaps(trap.bounds)) {
-                hurt(trap.bounds.x + trap.bounds.width / 2);
+                hurt();
                 if (phase != Phase.PLAYING) return;
             }
         }
@@ -329,10 +338,10 @@ public final class GameWorld {
         Rectangle e = enemy.bounds;
         boolean fromAbove = player.vy < 60 && p.y >= e.y + e.height * 0.4f;
         if (enemy.stompable() && (fromAbove || zenActive())) {
-            if (enemy.becomesFriend()) befriend(enemy, in, !zenActive() || fromAbove);
+            if (enemy.givesLife()) stompForLife(enemy, in, !zenActive() || fromAbove);
             else stunEnemy(enemy, in, fromAbove);
         } else if (!zenActive() && player.invuln <= 0) {
-            hurt(e.x + e.width / 2);
+            hurt();
             enemy.onHitPlayer();
         }
     }
@@ -345,35 +354,20 @@ public final class GameWorld {
         events.onStun(enemy.bounds.x + enemy.bounds.width / 2, enemy.bounds.y + enemy.bounds.height, gained);
     }
 
-    private void befriend(Enemy enemy, InputState in, boolean bounce) {
+    /** 밟은 동물은 사라지고 목숨이 하나 늘어납니다. */
+    private void stompForLife(Enemy enemy, InputState in, boolean bounce) {
         enemy.alive = false;
-        int points;
-        if (run.friends < Tuning.MAX_FRIENDS) {
-            run.friends++;
-            points = Tuning.POINTS_STOMP;
-        } else {
-            points = Tuning.POINTS_STOMP + Tuning.POINTS_FULL_STACK;
-        }
-        int gained = addCombo(points);
+        lives++;
+        int gained = addCombo(Tuning.POINTS_STOMP);
         addZen(Tuning.ZEN_PER_STOMP);
         if (bounce) player.stompBounce(in.jumpHeld);
         events.onStomp(enemy.bounds.x + enemy.bounds.width / 2, enemy.bounds.y + enemy.bounds.height,
             combo, gained);
     }
 
-    /** 친구가 있으면 대신 맞아 주고, 없으면 사망합니다. */
-    private void hurt(float sourceX) {
+    private void hurt() {
         if (player.invuln > 0 || zenActive()) return;
-        Rectangle p = player.bounds;
-        if (run.friends > 0) {
-            run.friends--;
-            combo = 0;
-            comboTimer = 0;
-            player.knockback(p.x + Player.W / 2 >= sourceX ? 1 : -1);
-            events.onFriendLost(p.x + Player.W / 2, p.y + Player.H);
-        } else {
-            die();
-        }
+        die();
     }
 
     private void die() {
@@ -381,19 +375,21 @@ public final class GameWorld {
         phase = Phase.DYING;
         deathTimer = Tuning.DEATH_TIME;
         run.deaths++;
-        run.friends = 0;
+        lives--;
         combo = 0;
         comboTimer = 0;
         zenTimer = 0;
         events.onDeath(player.bounds.x + Player.W / 2, player.bounds.y + Player.H / 2);
     }
 
-    /** 마지막 체크포인트에서 부활합니다. 모은 귤과 열린 문은 그대로 둡니다. */
+    /** 마지막 체크포인트에서 부활합니다. 모은 귤, 열린 문, 이미 밟은 동물은 그대로 둡니다. */
     private void respawn() {
         phase = Phase.PLAYING;
         player.place(checkpointX, checkpointY);
         player.invuln = Tuning.INVULN_TIME;
-        for (Enemy enemy : enemies) enemy.reset();
+        for (Enemy enemy : enemies) {
+            if (enemy.alive) enemy.reset();
+        }
         for (CrumblePlatform c : crumbles) {
             if (c.state == CrumblePlatform.State.FALLEN) solids.add(c.bounds);
             c.restore();
@@ -482,7 +478,7 @@ public final class GameWorld {
         if (flagUnlocked()) {
             phase = Phase.CLEARED;
             run.children++;
-            int bonus = Tuning.POINTS_CLEAR + run.friends * Tuning.POINTS_FRIEND_BONUS;
+            int bonus = Tuning.POINTS_CLEAR + lives * Tuning.POINTS_LIFE_BONUS;
             run.score += bonus;
             events.onClear(bonus);
         } else if (lockedCooldown == 0) {

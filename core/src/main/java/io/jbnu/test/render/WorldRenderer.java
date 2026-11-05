@@ -199,10 +199,7 @@ public final class WorldRenderer {
     private void drawSpringBack(HotSpring spring, float time) {
         Rectangle b = spring.bounds;
         if (!visible(b)) return;
-        // 노천탕: 나무 표지판과 바닥을 먼저 그리고, 돌과 물은 플레이어 앞에 그립니다.
-        assets.rect(b.x - 28, b.y, 4, 44, 0.42f, 0.27f, 0.13f, 1);
-        assets.rect(b.x - 48, b.y + 34, 44, 18, 0.62f, 0.42f, 0.22f, 1);
-        assets.textCenter("ONSEN", b.x - 26, b.y + 48, 0.72f, Color.WHITE);
+        // 노천탕: 바닥을 먼저 그리고, 돌과 물은 플레이어 앞에 그립니다.
         assets.rect(b.x - 8, b.y, b.width + 16, 8, 0.32f, 0.32f, 0.36f, 1);
         if (spring.activated) {
             float glow = 0.5f + 0.5f * MathUtils.sin(time * 4);
@@ -380,21 +377,6 @@ public final class WorldRenderer {
             player.facing < 0, false);
         batch.setColor(Color.WHITE);
 
-        if (!dying) drawFriends(world, cx, y + h * scaleY - 8, time);
-    }
-
-    /** 밟아서 사귄 친구들이 카피바라 머리 위에 층층이 올라앉습니다. */
-    private void drawFriends(GameWorld world, float cx, float headY, float time) {
-        Player player = world.player;
-        float y = headY;
-        float sway = player.ground != null && Math.abs(player.vx) > 20 ? 3 : 1;
-        for (int i = 0; i < world.run.friends; i++) {
-            Texture t = assets.boar[0];
-            float w = 30, h = 21;
-            float x = cx - w / 2 + MathUtils.sin(time * 5 + i * 1.3f) * sway * (i + 1);
-            batch.draw(t, x, y, w, h, 0, 0, t.getWidth(), t.getHeight(), player.facing < 0, false);
-            y += h - 3;
-        }
     }
 
     /** 끓는 물은 세계에서 가장 앞쪽에 그립니다. */

@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
 /**
  * 플레이어를 끝까지 쫓아오지만 아주 멍청한 몬스터입니다. 상태 기계로 행동합니다.
  * 잘 미끄러져 지나치고, 이유 없이 뛰고, 벽에 머리를 박고, 쫓던 대상을 잊고, 구덩이에 스스로 빠집니다.
- * 친구가 되지 않으며, 밟으면 잠시 어지러워할 뿐입니다.
+ * 밟아도 사라지지 않고 잠시 어지러워할 뿐입니다.
  */
 public final class Derpy extends Enemy {
     public enum State { ASLEEP, CHASE, CONFUSED, DIZZY, DANCE }
@@ -38,7 +38,7 @@ public final class Derpy extends Enemy {
     }
 
     @Override
-    public boolean becomesFriend() {
+    public boolean givesLife() {
         return false;
     }
 

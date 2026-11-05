@@ -23,8 +23,8 @@ public abstract class Enemy {
     /** 밟아서 친구로 만들 수 있으면 true입니다. */
     public abstract boolean stompable();
 
-    /** 밟았을 때 친구가 되면 true, 기절만 하면 false입니다. */
-    public boolean becomesFriend() {
+    /** 밟았을 때 목숨을 주고 사라지면 true, 기절만 하면 false입니다. */
+    public boolean givesLife() {
         return true;
     }
 

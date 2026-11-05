@@ -112,9 +112,8 @@ public final class TitleScreen extends ScreenAdapter {
             assets.batch.draw(assets.tangerine, 95 + i * 80, y, 44, 44);
         }
 
-        assets.textCenter("CAPYBARA'S", cx, 465, 4f, ORANGE);
-        assets.textCenter("OUTING", cx, 395, 3.4f, INK);
-        assets.textCenter("Dad is on his way to find his 3 kids!", cx, 340, 1.3f, INK);
+        assets.textCenter("DADDY CAPYBARA'S", cx, 455, 3.2f, ORANGE);
+        assets.textCenter("Journey to Find His Children", cx, 385, 1.9f, INK);
 
         startButton.draw(assets, mouse, BUTTON_MAIN);
         howToButton.draw(assets, mouse, BUTTON_SUB);
@@ -165,9 +164,8 @@ public final class TitleScreen extends ScreenAdapter {
         y = 402;
         assets.text("FRIENDS & FOES", right, y, 1.4f, GOLD, Align.left);
         y = helpRow(assets.tangerine, right, y - 54, 28, 28, "Eat in a row for a combo. Fills ZEN.");
-        y = helpRow(assets.boar[0], right, y, 34, 24, "Boar: stomp it to make a friend.");
-        assets.text("A friend blocks one hit. Fall and all are gone.", right + 44, y + 16, 1f, Color.LIGHT_GRAY, Align.left);
-        y -= 28;
+        y = helpRow(assets.heart, right, y, 26, 26, "3 lives per level. Lost when hit or falling.");
+        y = helpRow(assets.boar[0], right, y, 34, 24, "Boar: stomp it to get +1 life.");
         y = helpRow(assets.hedgehog[0], right, y, 32, 24, "Hedgehog: spiky! Jump over it.");
         y = helpRow(assets.derpy[0], right, y, 30, 28, "Derpy: he chases you. Stomp = dizzy.");
         y = helpRow(assets.golden, right, y, 28, 28, "Golden yuzu: fills ZEN at once.");
