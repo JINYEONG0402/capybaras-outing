@@ -1,0 +1,35 @@
+{
+  "name": "Sunny Meadow",
+  "theme": "meadow",
+  "worldWidth": 2200,
+  "worldHeight": 620,
+  "start": [65, 60],
+  "autoTangerines": true,
+  "blocks": [
+    [0, 0, 2200, 60],
+    [700, 236, 220, 24],
+    [1200, 130, 350, 24],
+    [1750, 60, 120, 70],
+    [1890, 130, 220, 24]
+  ],
+  "movers": [
+    { "x": 540, "y": 60, "w": 120, "min": 60, "max": 236, "speed": 65, "vertical": true }
+  ],
+  "traps": [
+    { "x": 1280, "y": 60, "w": 70, "period": 4.0, "active": 1.6, "phase": 1.6 },
+    { "x": 1440, "y": 60, "w": 60, "period": 4.0, "active": 1.6, "phase": 2.6 }
+  ],
+  "springs": [[50, 60], [1118, 60]],
+  "switch": [780, 260],
+  "door": [1080, 60, 430],
+  "flag": [2040, 154],
+  "child": [1985, 154],
+  "golden": [860, 400],
+  "signs": [
+    { "x": 280, "y": 230, "text": "Hold the jump button longer to jump higher" },
+    { "x": 280, "y": 185, "text": "Onsen = respawn. Stay still to soak and charge ZEN" },
+    { "x": 560, "y": 380, "text": "Ride the lift and step on the switch" },
+    { "x": 1290, "y": 300, "text": "Red floor burns! Stay up here or time your run" },
+    { "x": 1960, "y": 330, "text": "Your kid is waiting! Collect ALL tangerines to open the flag" }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Sunset Ferry",
+  "theme": "sunset",
+  "worldWidth": 2800,
+  "worldHeight": 640,
+  "start": [65, 60],
+  "autoTangerines": true,
+  "blocks": [
+    [0, 0, 560, 60],
+    [900, 0, 700, 60],
+    [1940, 0, 860, 60],
+    [980, 60, 140, 70],
+    [2280, 60, 120, 70],
+    [2430, 130, 120, 24],
+    [2600, 200, 180, 24]
+  ],
+  "movers": [
+    { "x": 520, "y": 100, "w": 150, "min": 520, "max": 800, "speed": 100, "vertical": false },
+    { "x": 1540, "y": 100, "w": 150, "min": 1540, "max": 1840, "speed": 90, "vertical": false }
+  ],
+  "crumbles": [
+    { "x": 240, "y": 140, "w": 90 },
+    { "x": 400, "y": 235, "w": 90 }
+  ],
+  "traps": [
+    { "x": 1170, "y": 60, "w": 70, "period": 3.2, "active": 1.4, "phase": 1.4 },
+    { "x": 1320, "y": 60, "w": 70, "period": 4.0, "active": 1.8, "phase": 2.4 },
+    { "x": 2110, "y": 60, "w": 80, "period": 3.6, "active": 1.5, "phase": 1.5 }
+  ],
+  "enemies": [
+    { "type": "boar", "x": 340, "y": 60, "min": 300, "max": 510 },
+    { "type": "hedgehog", "x": 1980, "y": 60, "min": 1960, "max": 2090 },
+    { "type": "boar", "x": 2640, "y": 224, "min": 2610, "max": 2680 }
+  ],
+  "springs": [[50, 60], [1484, 60]],
+  "switch": [1020, 130],
+  "door": [1450, 60, 430],
+  "flag": [2720, 224],
+  "child": [2672, 224],
+  "golden": [520, 340],
+  "signs": [
+    { "x": 200, "y": 300, "text": "Stomp a boar: it becomes your friend\nand blocks one hit for you" },
+    { "x": 330, "y": 420, "text": "Cracked planks fall when you stand on them" },
+    { "x": 1660, "y": 300, "text": "ZEN full? Use it: world slows, you can't be hurt" },
+    { "x": 2000, "y": 190, "text": "Hedgehogs are spiky: never stomp them. Jump over!" }
+  ]
+}
