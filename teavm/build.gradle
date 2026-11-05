@@ -1,0 +1,16 @@
+// 웹 버전(TeaVM). 자바 코드를 자바스크립트로 변환해 휴대폰과 PC 브라우저에서 실행합니다.
+java.sourceCompatibility = 11
+java.targetCompatibility = 11
+
+dependencies {
+  implementation "com.github.xpenatan.gdx-teavm:backend-teavm:$gdxTeaVMVersion"
+  implementation project(':core')
+}
+
+// gradlew teavm:buildWeb 을 실행하면 teavm/build/dist/webapp 에 웹사이트가 만들어집니다.
+tasks.register('buildWeb', JavaExec) {
+  dependsOn classes
+  mainClass = 'io.jbnu.test.teavm.TeaVMBuilder'
+  classpath = sourceSets.main.runtimeClasspath
+  workingDir = projectDir
+}

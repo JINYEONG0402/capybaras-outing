@@ -1,0 +1,38 @@
+{
+  "name": "Derpy's Night",
+  "theme": "night",
+  "worldWidth": 2600,
+  "worldHeight": 700,
+  "start": [65, 60],
+  "autoTangerines": true,
+  "blocks": [
+    [0, 0, 620, 60],
+    [880, 0, 420, 60],
+    [1440, 0, 1160, 60],
+    [300, 60, 80, 64],
+    [960, 60, 96, 80],
+    [1650, 60, 120, 70],
+    [1790, 60, 120, 140],
+    [1930, 60, 120, 210],
+    [2100, 270, 110, 24],
+    [2280, 320, 210, 24]
+  ],
+  "movers": [
+    { "x": 580, "y": 85, "w": 140, "min": 580, "max": 800, "speed": 85, "vertical": false },
+    { "x": 2214, "y": 60, "w": 62, "min": 60, "max": 300, "speed": 80, "vertical": true }
+  ],
+  "enemies": [
+    { "type": "derpy", "x": 0, "y": 60 },
+    { "type": "boar", "x": 1500, "y": 60, "min": 1470, "max": 1630 },
+    { "type": "boar", "x": 2300, "y": 344, "min": 2290, "max": 2400 }
+  ],
+  "springs": [[50, 60], [1120, 60]],
+  "flag": [2420, 344],
+  "child": [2372, 344],
+  "golden": [2150, 410],
+  "signs": [
+    { "x": 280, "y": 250, "text": "Oh no. Derpy is waking up. He loves you. He is not smart." },
+    { "x": 280, "y": 205, "text": "Stomp him and he gets dizzy for a while" },
+    { "x": 2120, "y": 170, "text": "Take the lift back up" }
+  ]
+}
