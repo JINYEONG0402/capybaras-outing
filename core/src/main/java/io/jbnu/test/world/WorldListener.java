@@ -11,9 +11,9 @@ public interface WorldListener {
     default void onGolden(float x, float y, int points) { }
     default void onStomp(float x, float y, int combo, int points) { }
     default void onStun(float x, float y, int points) { }
-    default void onFriendLost(float x, float y) { }
     default void onDeath(float x, float y) { }
     default void onRespawn() { }
+    default void onGameOver() { }
     default void onSwitch() { }
     default void onCheckpoint(float x, float y) { }
     default void onZenStart() { }

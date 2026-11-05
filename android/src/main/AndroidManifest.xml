@@ -5,7 +5,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:isGame="true"
-        android:label="Capybara's Outing"
+        android:label="Daddy Capybara"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
         <activity
             android:name=".AndroidLauncher"

@@ -2,7 +2,6 @@ package io.jbnu.test.render;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Align;
@@ -68,14 +67,12 @@ public final class Hud {
         assets.batch.draw(assets.iconShield, x + w + 6, y - 3, 22, 22);
         assets.batch.setColor(Color.WHITE);
 
-        // 친구 수는 아이콘으로 표시합니다.
-        assets.batch.setColor(Color.WHITE);
-        for (int i = 0; i < Tuning.MAX_FRIENDS; i++) {
-            Texture t = assets.boar[0];
-            if (i >= world.run.friends) assets.batch.setColor(0, 0, 0, 0.35f);
-            assets.batch.draw(t, x + i * 34, y - 30, 30, 21);
-            assets.batch.setColor(Color.WHITE);
+        // 남은 목숨을 하트로 표시합니다.
+        assets.batch.setColor(1f, 0.32f, 0.42f, 1);
+        for (int i = 0; i < world.lives; i++) {
+            assets.batch.draw(assets.heart, x + i * 28, y - 30, 24, 24);
         }
+        assets.batch.setColor(Color.WHITE);
     }
 
     /** 찾은 자식 수를 아이콘으로 표시합니다. 아직 못 찾은 자식은 그림자로 보입니다. */

@@ -35,13 +35,15 @@ import io.jbnu.test.world.WorldListener;
 
 /** 라운드 진행을 담당합니다: 인트로 → 플레이 → (문 열림 연출) → 클리어 연출 → 다음 라운드. */
 public final class PlayScreen extends ScreenAdapter {
-    private enum Phase { INTRO, PLAY, CUTSCENE, CLEAR }
+    private enum Phase { INTRO, PLAY, CUTSCENE, CLEAR, GAME_OVER }
 
     private static final float INTRO_SECONDS = 2.4f;
     private static final float CLEAR_SECONDS = 3f;
     private static final float CLEAR_CAMERA_RISE = 360f;
     private static final float CUTSCENE_SECONDS = 1.4f;
     private static final Color GOLD = new Color(1, 0.84f, 0.25f, 1);
+    private static final Color BUTTON_MAIN = new Color(0.9f, 0.45f, 0.08f, 1);
+    private static final Color BUTTON_SUB = new Color(0.25f, 0.5f, 0.42f, 1);
 
     private final Main game;
     private final GameAssets assets;
@@ -63,6 +65,8 @@ public final class PlayScreen extends ScreenAdapter {
     private final UiButton pauseButton = UiButton.icon(Tuning.VIEW_W - 44, Tuning.VIEW_H - 129, 38);
     private final UiButton homeButton = UiButton.icon(Tuning.VIEW_W - 44, Tuning.VIEW_H - 171, 38);
     private boolean settingsOpen;
+    private final UiButton retryButton = UiButton.text(285, 170, 220, 60, "RETRY LEVEL", 1.6f);
+    private final UiButton gameOverHomeButton = UiButton.text(525, 170, 150, 60, "HOME", 1.6f);
     private final Hud hud;
     private final WorldEvents events = new WorldEvents();
 
@@ -123,6 +127,13 @@ public final class PlayScreen extends ScreenAdapter {
         gameCamera.snapTo(world);
     }
 
+    /** 게임 오버 뒤 같은 레벨을 처음부터 합니다. 점수만 되돌리고 떨어진 횟수와 시간은 등급에 남깁니다. */
+    private void retryLevel() {
+        roundStart.deaths = run.deaths;
+        roundStart.time = run.time;
+        restartRound();
+    }
+
     private void setPhase(Phase next) {
         phase = next;
         phaseTime = 0;
@@ -139,6 +150,15 @@ public final class PlayScreen extends ScreenAdapter {
     /** 톱니바퀴와 그 아래 아이콘의 클릭을 처리합니다. 화면을 떠나면 true를 돌려줍니다. */
     private boolean handleSettingsClick() {
         if (!mouse.clicked) return false;
+        if (phase == Phase.GAME_OVER) {
+            if (retryButton.clicked(mouse)) {
+                retryLevel();
+            } else if (gameOverHomeButton.clicked(mouse)) {
+                game.showTitle();
+                return true;
+            }
+            return false;
+        }
         if (gearButton.clicked(mouse)) {
             settingsOpen = !settingsOpen;
             audio.play("land", 0.5f, 1.4f);
@@ -169,6 +189,11 @@ public final class PlayScreen extends ScreenAdapter {
         if (paused && Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
             game.showTitle();
             return true;
+        }
+        if (phase == Phase.GAME_OVER && (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+            || Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.R))) {
+            retryLevel();
+            return false;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R) && (paused || phase == Phase.PLAY)) restartRound();
         return false;
@@ -202,6 +227,8 @@ public final class PlayScreen extends ScreenAdapter {
                 break;
             case CUTSCENE:
                 updateCutscene(delta);
+                break;
+            case GAME_OVER:
                 break;
             default:
                 updateClear(delta);
@@ -370,8 +397,17 @@ public final class PlayScreen extends ScreenAdapter {
             assets.textCenter(String.format("Time %d:%02d    Bonus +%d", s / 60, s % 60, clearBonus), cx, 245, 1.5f, Color.WHITE);
         }
         if (game.touchUi && phase == Phase.PLAY && !paused) touch.draw(assets, world.run.zen >= 1 && !world.zenActive());
+        if (phase == Phase.GAME_OVER) drawGameOver(cx);
         if (paused) drawPause(cx);
         drawSettings();
+    }
+
+    private void drawGameOver(float cx) {
+        assets.rect(0, 0, Tuning.VIEW_W, Tuning.VIEW_H, 0, 0, 0, 0.72f);
+        assets.textCenter("GAME OVER", cx, 345, 4f, Color.WHITE);
+        assets.textCenter("Your kid is still waiting!", cx, 275, 1.4f, GOLD);
+        retryButton.draw(assets, mouse, BUTTON_MAIN);
+        gameOverHomeButton.draw(assets, mouse, BUTTON_SUB);
     }
 
     private void drawPause(float cx) {
@@ -458,7 +494,7 @@ public final class PlayScreen extends ScreenAdapter {
         public void onStomp(float x, float y, int combo, int points) {
             audio.play("stomp", 0.75f, Math.min(1.6f, 1f + (combo - 1) * 0.06f));
             particles.burst(x, y, 16, 240, 1f, 0.85f, 0.5f);
-            particles.popup("FRIEND! +" + points, x, y + 26, 1.25f, Color.WHITE);
+            particles.popup("+1 LIFE  +" + points, x, y + 26, 1.25f, Color.WHITE);
             gameCamera.shake(5, 0.15f);
             hitStop = 0.05f;
         }
@@ -470,15 +506,6 @@ public final class PlayScreen extends ScreenAdapter {
             particles.popup("BONK! +" + points, x, y + 26, 1.25f, Color.WHITE);
             gameCamera.shake(6, 0.18f);
             hitStop = 0.06f;
-        }
-
-        @Override
-        public void onFriendLost(float x, float y) {
-            audio.play("hurt");
-            particles.burst(x, y, 18, 260, 0.75f, 0.5f, 0.3f);
-            particles.popup("Your friend took the hit!", x, y + 34, 1.1f, Color.WHITE);
-            gameCamera.shake(8, 0.25f);
-            hitStop = 0.08f;
         }
 
         @Override
@@ -496,9 +523,13 @@ public final class PlayScreen extends ScreenAdapter {
         }
 
         @Override
+        public void onGameOver() {
+            setPhase(Phase.GAME_OVER);
+        }
+
+        @Override
         public void onSwitch() {
             audio.play("switch");
-            showMessage("A door has opened!", 2f);
             // 문이 열리는 모습을 카메라로 보여 줍니다.
             Rectangle door = world.door;
             gameCamera.setFocus(door.x, door.y + 200);

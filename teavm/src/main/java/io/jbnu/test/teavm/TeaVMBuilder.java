@@ -32,7 +32,7 @@ public final class TeaVMBuilder {
             return true;
         };
         configuration.webappPath = new File("build/dist").getCanonicalPath();
-        configuration.htmlTitle = "Capybara's Outing";
+        configuration.htmlTitle = "Daddy Capybara's Journey";
         configuration.htmlWidth = 960;
         configuration.htmlHeight = 540;
         configuration.showLoadingLogo = false;
@@ -67,10 +67,12 @@ public final class TeaVMBuilder {
             + "<meta name=\"mobile-web-app-capable\" content=\"yes\">\n"
             + "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">\n"
             + "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">\n"
-            + "<meta name=\"apple-mobile-web-app-title\" content=\"Capybara\">\n"
+            + "<meta name=\"apple-mobile-web-app-title\" content=\"Daddy Capybara\">\n"
             + "<link rel=\"manifest\" href=\"manifest.webmanifest\">\n"
             + "<link rel=\"apple-touch-icon\" href=\"apple-touch-icon.png\">\n"
-            + "<style>html, body, canvas { touch-action: none; -webkit-user-select: none; user-select: none; "
+            + "<style>html, body { position: fixed !important; top: 0; left: 0; width: 100% !important; height: 100% !important; overflow: hidden; margin: 0; } "
+            + "canvas { display: block; position: absolute; top: 0; left: 0; } "
+            + "html, body, canvas { touch-action: none; -webkit-user-select: none; user-select: none; "
             + "-webkit-touch-callout: none; overscroll-behavior: none; background: #000; } "
             + "#progress { width: 80vw !important; margin-left: -40vw !important; }</style>\n"
             + "<script src=\"mobile.js\"></script>\n";

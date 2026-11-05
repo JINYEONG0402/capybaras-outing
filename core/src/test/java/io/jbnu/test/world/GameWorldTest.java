@@ -32,30 +32,39 @@ public class GameWorldTest {
     }
 
     @Test
-    public void stompingBoarMakesFriendAndBounces() {
+    public void stompingBoarGivesLifeAndBounces() {
         GameWorld w = withBoar();
         w.player.place(105, 130);
         run(w, 0.3f);
-        assertEquals(1, w.run.friends);
+        assertEquals(Tuning.START_LIVES + 1, w.lives);
         assertTrue(w.player.vy > 0);
         assertTrue(!w.enemies.first().alive);
     }
 
     @Test
-    public void friendBlocksHitThenDeathHappens() {
+    public void hitsCostLivesUntilGameOver() {
         GameWorld w = withBoar();
-        w.run.friends = 1;
-        w.player.place(120, 60);
-        run(w, 0.05f);
-        assertEquals(0, w.run.friends);
-        assertEquals(GameWorld.Phase.PLAYING, w.phase);
+        for (int life = Tuning.START_LIVES - 1; life >= 0; life--) {
+            w.player.invuln = 0;
+            w.player.place(w.enemies.first().bounds.x, 60);
+            w.step(Tuning.FIXED_STEP, in);
+            assertEquals(GameWorld.Phase.DYING, w.phase);
+            assertEquals(life, w.lives);
+            run(w, Tuning.DEATH_TIME + 0.05f);
+        }
+        assertEquals(GameWorld.Phase.GAME_OVER, w.phase);
+        assertEquals(Tuning.START_LIVES, w.run.deaths);
+    }
 
-        // 무적 시간이 끝난 뒤 친구 없이 맞으면 사망합니다.
-        w.player.invuln = 0;
-        w.player.place(w.enemies.first().bounds.x, 60);
-        w.step(Tuning.FIXED_STEP, in);
-        assertEquals(GameWorld.Phase.DYING, w.phase);
-        assertEquals(1, w.run.deaths);
+    @Test
+    public void stompedBoarStaysGoneAfterRespawn() {
+        GameWorld w = withBoar();
+        w.player.place(105, 130);
+        run(w, 0.3f);
+        w.player.place(1000, -200);
+        run(w, Tuning.DEATH_TIME + 0.1f);
+        assertEquals(GameWorld.Phase.PLAYING, w.phase);
+        assertTrue(!w.enemies.first().alive);
     }
 
     @Test
@@ -63,7 +72,7 @@ public class GameWorldTest {
         GameWorld w = world("\"enemies\":[{\"type\":\"hedgehog\",\"x\":100,\"y\":60,\"min\":90,\"max\":150}]");
         w.player.place(105, 110);
         run(w, 0.2f);
-        assertEquals(0, w.run.friends);
+        assertEquals(Tuning.START_LIVES - 1, w.lives);
         assertEquals(GameWorld.Phase.DYING, w.phase);
     }
 
@@ -144,7 +153,7 @@ public class GameWorldTest {
     }
 
     @Test
-    public void stompingDerpyStunsHimButMakesNoFriend() {
+    public void stompingDerpyStunsHimAndGivesNoLife() {
         GameWorld w = withDerpy();
         Derpy derpy = (Derpy) w.enemies.first();
         derpy.state = Derpy.State.CHASE;
@@ -152,18 +161,17 @@ public class GameWorldTest {
         run(w, 0.3f);
         assertEquals(Derpy.State.DIZZY, derpy.state);
         assertTrue(derpy.alive);
-        assertEquals(0, w.run.friends);
+        assertEquals(Tuning.START_LIVES, w.lives);
     }
 
     @Test
-    public void derpyCatchingPlayerHurtsThenDances() {
+    public void derpyCatchingPlayerCostsLife() {
         GameWorld w = withDerpy();
         Derpy derpy = (Derpy) w.enemies.first();
         derpy.state = Derpy.State.CHASE;
-        w.run.friends = 1;
         w.player.place(605, 60);
         run(w, 0.05f);
-        assertEquals(0, w.run.friends);
+        assertEquals(Tuning.START_LIVES - 1, w.lives);
         assertEquals(Derpy.State.DANCE, derpy.state);
     }
 
