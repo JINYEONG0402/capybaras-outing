@@ -29,10 +29,5 @@
   "springs": [[50, 60], [1120, 60]],
   "flag": [2420, 344],
   "child": [2372, 344],
-  "golden": [2150, 410],
-  "signs": [
-    { "x": 280, "y": 250, "text": "Oh no. Derpy is waking up. He loves you. He is not smart." },
-    { "x": 280, "y": 205, "text": "Stomp him and he gets dizzy for a while" },
-    { "x": 2120, "y": 170, "text": "Take the lift back up" }
-  ]
+  "golden": [2150, 410]
 }
