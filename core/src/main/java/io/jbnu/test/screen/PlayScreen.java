@@ -361,8 +361,8 @@ public final class PlayScreen extends ScreenAdapter {
         float cx = Tuning.VIEW_W / 2;
         if (phase == Phase.INTRO) {
             assets.rect(0, 200, Tuning.VIEW_W, 130, 0, 0, 0, 0.4f);
-            assets.textCenter("ROUND " + (round + 1), cx, 305, 3.6f, Color.WHITE);
-            assets.textCenter(world.def.name + "  -  Find kid #" + (round + 1), cx, 240, 1.7f, GOLD);
+            assets.textCenter("FIND THE KID", cx, 305, 3.6f, Color.WHITE);
+            assets.textCenter("LEVEL " + (round + 1), cx, 240, 2f, GOLD);
         } else if (phase == Phase.CLEAR) {
             assets.rect(0, 190, Tuning.VIEW_W, 150, 0, 0, 0, 0.45f);
             assets.textCenter("YOU FOUND YOUR KID!", cx, 315, 3f, GOLD);

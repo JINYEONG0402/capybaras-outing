@@ -61,8 +61,8 @@ public final class Hud {
         boolean full = !active && world.run.zen >= 1;
         float flash = full ? 0.75f + 0.25f * MathUtils.sin(time * 9) : 1;
         assets.rect(x, y, w * ratio, h, 0.45f * flash, 0.9f * flash, 0.65f * flash, 1);
-        String label = active ? "ZEN!" : full ? "ZEN READY!" : "ZEN";
-        assets.text(label, x + 6, y + 13, 0.85f, WHITE, Align.left);
+        // 게이지가 가득 찼을 때만 글자를 보여 줍니다.
+        if (full) assets.text("SHIELD READY!", x + 6, y + 13, 0.85f, WHITE, Align.left);
         if (active || full) assets.batch.setColor(GOLD);
         else assets.batch.setColor(1, 1, 1, 0.55f);
         assets.batch.draw(assets.iconShield, x + w + 6, y - 3, 22, 22);

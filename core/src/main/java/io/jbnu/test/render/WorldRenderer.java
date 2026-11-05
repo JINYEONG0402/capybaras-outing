@@ -148,8 +148,6 @@ public final class WorldRenderer {
         for (float x = box.x + 16; x < box.x + box.width - 4; x += 28) {
             assets.rect(x, box.y, 3, box.height - 6, 0.3f, 0.18f, 0.08f, 1);
         }
-        float cx = box.x + box.width / 2;
-        assets.textCenter(mover.vertical ? "^  LIFT  v" : "<  FERRY  >", cx, box.y + 14, 0.8f, Color.WHITE);
     }
 
     private void drawCrumble(CrumblePlatform c) {

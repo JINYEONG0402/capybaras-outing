@@ -24,12 +24,5 @@
   "door": [1080, 60, 430],
   "flag": [2040, 154],
   "child": [1985, 154],
-  "golden": [860, 400],
-  "signs": [
-    { "x": 280, "y": 230, "text": "Hold the jump button longer to jump higher" },
-    { "x": 280, "y": 185, "text": "Onsen = respawn. Stay still to soak and charge ZEN" },
-    { "x": 560, "y": 380, "text": "Ride the lift and step on the switch" },
-    { "x": 1290, "y": 300, "text": "Red floor burns! Stay up here or time your run" },
-    { "x": 1960, "y": 330, "text": "Your kid is waiting! Collect ALL tangerines to open the flag" }
-  ]
+  "golden": [860, 400]
 }
