@@ -22,9 +22,9 @@ i:b:/baby.png:51048:1
 i:b:/capybara.png:977762:1
 i:b:/flag.png:4013:1
 i:d:/levels:0:1
-i:b:/levels/round1.json:1183:1
-i:b:/levels/round2.json:1665:1
-i:b:/levels/round3.json:1171:1
+i:b:/levels/round1.json:730:1
+i:b:/levels/round2.json:1283:1
+i:b:/levels/round3.json:916:1
 i:b:/pause.png:15739:1
 c:b:/com/badlogic/gdx/utils/lsans-15.png:10270:1
 c:b:/com/badlogic/gdx/graphics/g3d/shaders/default.vertex.glsl:9096:1
